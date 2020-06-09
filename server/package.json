@@ -1,0 +1,23 @@
+{
+  "name": "chess-backend",
+  "version": "1.0.0",
+  "description": "This is the backend for a minimalistic chess application. Features including: 1.Match playing 2.Profile management 3.Game replay 4.Game room",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "chess",
+    "backend"
+  ],
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nodemon": "^1.19.3",
+    "socket.io": "^2.3.0",
+    "uuidv4": "^6.1.0"
+  },
+  "author": "Rishabh Anand",
+  "license": "MIT"
+}
