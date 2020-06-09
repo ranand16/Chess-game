@@ -5,6 +5,8 @@ import { uuid } from "uuidv4"
 import './App.css'
 
 let socket;
+let darkClassArray = ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "pawn_dark"];
+let whiteClassArray = ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "pawn_white"];
 class App extends React.Component {
   constructor(props){
     super(props);
@@ -17,6 +19,23 @@ class App extends React.Component {
 
       currentUserId: false, // room id for player after joining response
       currentRoomId: false, // user id for player after joining response
+
+      onGoingMoveOne: false, // first click to select a cell for starting a move 
+      onGoingMoveTwo: false, // second click to select a cell to end the move
+
+      playerSide: true, // true for dark and false for white
+      chessGameData: 
+      [
+        ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
+        ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],        
+        ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"],
+      ]
+
     }
   }
 
@@ -33,6 +52,56 @@ class App extends React.Component {
   roomNameChange = (e) => {
     if(e && e.target && e.target.value) {
       this.setState({ roomNameInput: e.target.value })
+    }
+  }
+
+  clickCell = (e) => {
+    let classArray = darkClassArray;
+    let clickedPlayer = null;
+    const { onGoingMoveOne, onGoingMoveTwo, playerSide } = this.state;  
+    if(!playerSide) classArray = whiteClassArray;
+    let classnames = e.target.className
+    let selectedClassArray = classnames.split(" ");
+    let commonClassArray = selectedClassArray.filter(function(n) {
+      return classArray.indexOf(n) !== -1;
+    })
+    if(commonClassArray.length<1) return // you have clicked an empty cell 
+    clickedPlayer = commonClassArray[0];
+    if(onGoingMoveOne && !onGoingMoveTwo){
+      // start the second step
+    } else if(onGoingMoveOne && onGoingMoveTwo){
+      // complete the move
+      this.setState({ onGoingMoveOne: false, onGoingMoveTwo: false })
+    } else {
+      // start the first step of move
+      // this.setState({ onGoingMoveOne: true, onGoingMoveTwo: false })
+      // check type of selected player & highlight the possible destinations
+      console.log(classArray)
+      switch(clickedPlayer){
+        case classArray[0]: // rook
+          console.log(clickedPlayer)
+
+        break;
+        case classArray[1]: // knight
+          console.log(clickedPlayer)
+        break;
+        case classArray[2]: // bishop
+          console.log(clickedPlayer)
+        break;
+        case classArray[3]: // queen 
+          console.log(clickedPlayer)
+        break;
+        case classArray[4]: // king
+          console.log(clickedPlayer)
+        break;
+        case classArray[5]: // pawn
+          console.log(clickedPlayer)
+
+        break;
+        default:
+        break;
+      }
+
     }
   }
 
@@ -71,7 +140,7 @@ class App extends React.Component {
   }
 
   render (){
-    const { joinScreen, gameScreen, currentRoomId, currentUserId } = this.state
+    const { joinScreen, gameScreen, chessGameData, currentRoomId, currentUserId } = this.state
     return (
       <div className="App">
         {joinScreen && <div id="joinScreen">
@@ -90,84 +159,84 @@ class App extends React.Component {
           <div id="gameLeftPane">This is left pane</div>
           <div id="gamePane">
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[0][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[0][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[0][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[0][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[0][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[0][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[0][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[0][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[1][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[1][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[1][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[1][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[1][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[1][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[1][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[1][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[2][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[2][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[2][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[2][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[2][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[2][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[2][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[2][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[3][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[3][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[3][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[3][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[3][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[3][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[3][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[3][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[4][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[4][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[4][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[4][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[4][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[4][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[4][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[4][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[5][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[5][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[5][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[5][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[5][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[5][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[5][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[5][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[6][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[6][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[6][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[6][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[6][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[6][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[6][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[6][7]}`} onClick={this.clickCell}></div>
             </div>
             <div className={"gamePaneRow"}>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
-              <div className={"gamePaneCell blackBackground"}>22</div>
-              <div className={"gamePaneCell whiteBackground"}>22</div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[7][0]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[7][1]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[7][2]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[7][3]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[7][4]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[7][5]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell blackBackground ${chessGameData[7][6]}`} onClick={this.clickCell}></div>
+              <div className={`gamePaneCell whiteBackground ${chessGameData[7][7]}`} onClick={this.clickCell}></div>
             </div>
           </div>
           <div id="gameRightPane">This is right pane</div>

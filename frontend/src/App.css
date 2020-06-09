@@ -105,6 +105,7 @@ body{
 
 #gamePane{
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 8;
@@ -123,24 +124,24 @@ body{
 .gamePaneRow{
     display: flex;
     flex-wrap: wrap;
-    flex-direction: column;
+    /* flex-direction: column; */
     justify-content: space-around;
 }
 .gamePaneCell{
     display: flex;
-    flex-direction: column;
+    /* flex-direction: column; */
     text-align: center;
     align-content: center;
     justify-content: space-around;
     border: 1px solid #333;
-    width: 5vw;
-    height: 5vw;
+    width: 6vw;
+    height: 6vw;
 }
 .whiteBackground{
-    background: #E6CCAB;
+    background-color: #E6CCAB;
 } 
 .blackBackground{
-    background: #9D571C;
+    background-color: #9D571C;
 }
 
 .gamePaneBorderCell{
@@ -152,3 +153,88 @@ body{
     width: 2vw;
     height: 5vw;
 }
+
+.pawn_dark{
+    background-image: url('./Images/pawn_dark.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.king_dark{
+    background-image: url('./Images/king_dark.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.queen_dark{
+    background-image: url('./Images/queen_dark.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.knight_dark{
+    background-image: url('./Images/knight_dark.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.rook_dark{
+    background-image: url('./Images/rook_dark.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.bishop_dark{
+    background-image: url('./Images/bishop_dark.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.pawn_white{
+    background-image: url('./Images/pawn_white.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.king_white{
+    background-image: url('./Images/king_white.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.queen_white{
+    background-image: url('./Images/queen_white.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.knight_white{
+    background-image: url('./Images/knight_white.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.rook_white{
+    background-image: url('./Images/rook_white.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.bishop_white{
+    background-image: url('./Images/bishop_white.png');
+    background-position: 50% 0%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
