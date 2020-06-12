@@ -238,10 +238,9 @@ body{
     background-repeat: no-repeat;
 }
 
-.highlight_dark{
-    background-color: #99795e !important;
-}
-
-.highlight_white{
+.highlight{
     background-color: #dbd7d2 !important;
+}
+.highlight_danger{
+    background-color: #a80000 !important;
 }
