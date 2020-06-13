@@ -24,18 +24,20 @@ class App extends React.Component {
       onGoingMoveOne: false, // first click to select a cell for starting a move 
       onGoingMoveTwo: false, // second click to select a cell to end the move
 
-      playerSide: true, // true for dark and false for white
+      playerSide: true, // true for black and false for white
       chessGameData: [
         ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
         ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
-        ["na", "na", "na", "na", "na", "na", "na", "na"],
+        ["na", "na", "na", "na", "na", "pawn_dark", "na", "na"],
         ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],        
         ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"],
       ],
-      probableDestinations: []
+      probableDestinations: [],
+      clcikedPlayeri: null, // i value after selecting a player
+      clcikedPlayerj: null, // j value after selecting a player
     }
   }
 
@@ -58,54 +60,76 @@ class App extends React.Component {
   clickCell = (i ,j, e) => {
     console.log(i, j)
     let classArray = darkClassArray;
+    let playerType = "dark";
     let clickedPlayer = null;
-    const { onGoingMoveOne, onGoingMoveTwo, playerSide, chessGameData } = this.state;  
-    if(!playerSide) classArray = whiteClassArray;
+    const { onGoingMoveOne, onGoingMoveTwo, playerSide, probableDestinations, chessGameData, clcikedPlayeri, clcikedPlayerj } = this.state;  
+    if(!playerSide) { classArray = whiteClassArray; playerType="white" }
     clickedPlayer = chessGameData[i][j];
-    console.log(onGoingMoveOne, onGoingMoveTwo)
-    if(onGoingMoveOne && !onGoingMoveTwo){
-      // start the second step
-    } else if(onGoingMoveOne && onGoingMoveTwo){
-      // complete the move
-      this.setState({ onGoingMoveOne: false, onGoingMoveTwo: false })
+    // console.log(onGoingMoveOne, onGoingMoveTwo)
+    // if(onGoingMoveOne && !onGoingMoveTwo){
+    //   // start the second step
+    // } else if(onGoingMoveOne && onGoingMoveTwo){
+    //   // complete the move
+    //   this.setState({ onGoingMoveOne: false, onGoingMoveTwo: false })
+    let ifClickedOneOfDest = probableDestinations.filter(dest=>dest["x"] === i && dest["y"] === j)
+    console.log(playerType, clickedPlayer, clickedPlayer.split("_")[1]) 
+    if(ifClickedOneOfDest && ifClickedOneOfDest.length>0){
+      // complete the move 
+      if(clickedPlayer!=="na" && playerType !== clickedPlayer.split("_")[1]) {// there is enemy player at destination 
+        chessGameData[i][j] = chessGameData[clcikedPlayeri][clcikedPlayerj]
+        chessGameData[clcikedPlayeri][clcikedPlayerj] = "na";
+        this.setState({ chessGameData, probableDestinations: [] })
+      } else if(clickedPlayer==="na"){ // no player at destination 
+        chessGameData[i][j] = chessGameData[clcikedPlayeri][clcikedPlayerj]
+        chessGameData[clcikedPlayeri][clcikedPlayerj] = "na";
+        this.setState({ chessGameData, probableDestinations: [] })
+      }
     } else {
       // check if the clicked cell is not empty
       if(clickedPlayer && clickedPlayer==="na") return // you have clicked an empty cell 
-      console.log(clickedPlayer)
       // start the first step of move
       // check type of selected player & highlight the possible destinations
       let probableDestinations = this.calculateDestinations(parseInt(i), parseInt(j), clickedPlayer, playerSide, classArray, chessGameData)
       // this.setState({ onGoingMoveOne: true, onGoingMoveTwo: false, probableDestinations })
-      this.setState({ probableDestinations })
+      this.setState({ probableDestinations, clcikedPlayeri: i, clcikedPlayerj: j })
     }
   }
 
-  calculateDestinations = (i, j, playerType, playerSide, classArray, chessGameData) => {
-    console.log(i, j, playerType, classArray)
+  calculateDestinations = (i, j, clickedPlayer, playerSide, classArray, chessGameData) => {
+    console.log(i, j, clickedPlayer, classArray)
     let hightlightArray = [];
-    switch(playerType){
+    switch(clickedPlayer){
       case classArray[0]: // rook
-        // console.log(playerType)
+        // console.log(clickedPlayer)
       break;
       case classArray[1]: // knight
-        console.log(playerType)
+        console.log(clickedPlayer)
       break;
       case classArray[2]: // bishop
-        console.log(playerType)
+        console.log(clickedPlayer)
       break;
       case classArray[3]: // queen 
-        console.log(playerType)
+        console.log(clickedPlayer)
       break;
       case classArray[4]: // king
-        console.log(playerType)
+        console.log(clickedPlayer)
       break;
       case classArray[5]: // pawn
         if(playerSide){ // dark
-          hightlightArray.push({ x:i+1, y:j, enemyCell: chessGameData[i+1][j]==="na"?false:true })
-          if(i===1) hightlightArray.push({ x:i+2, y:j, enemyCell: chessGameData[i+2][j]==="na"?false:true });
+          // for highlighting non attacking destinations
+          if(chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+1, y:j, enemyCell: false })
+          if(i===1 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+2, y:j, enemyCell: false });
+          // for highlighting red for enemy at just diagonals
+          console.log(chessGameData[i+1][j-1])
+          if(chessGameData[i+1][j-1]!=="na" && chessGameData[i+1][j-1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
+          if(chessGameData[i+1][j+1]!=="na" && chessGameData[i+1][j+1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
         } else { // white
-          hightlightArray.push({ x:i-1, y:j, enemyCell: chessGameData[i-1][j]==="na"?false:true });
-          if(i===6) hightlightArray.push({ x:i-2, y:j, enemyCell: chessGameData[i-2][j]==="na"?false:true });
+          // for highlighting non attacking destinations
+          if(chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-1, y:j, enemyCell: false });
+          if(i===6 && chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-2, y:j, enemyCell: false });
+          // for highlighting red for enemy at just diagonals
+          if(chessGameData[i-1][j+1]!=="na" && chessGameData[i-1][j+1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
+          if(chessGameData[i-1][j-1]!=="na" && chessGameData[i-1][j-1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
         }
       break;
       default:
@@ -176,14 +200,14 @@ class App extends React.Component {
                       let isProbableDestination = false
                       let isDanger = false
                       for(let d=0;d<probableDestinations.length;d++){
-                        if(probableDestinations[d]["enemyCell"]){
-                          isDanger = probableDestinations[d]["enemyCell"]?probableDestinations[d]["enemyCell"]:false
+                        if(probableDestinations[d]["enemyCell"] && probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j){
+                          if(!isDanger) isDanger = probableDestinations[d]["enemyCell"]?probableDestinations[d]["enemyCell"]:false
+                          isProbableDestination = false
                         }
-                        isProbableDestination = probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j
-                        console.log(isProbableDestination, probableDestinations[d]["x"], i, probableDestinations[d]["y"], j)
+                        if(!isProbableDestination) isProbableDestination = probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j
                       }
-                      let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":""} ${chessGameData[i][j]}`;
-                      return ( <div key={`${i}+${j}`} className={classNames} onClick={this.clickCell.bind(this,i,j)}></div> )
+                      let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":null} ${chessGameData[i][j]}`;
+                      return ( <div key={`${i}+${j}`} className={classNames} onClick={this.clickCell.bind(this,i,j)}></div>  )
                     })}
                   </div>
                 )
