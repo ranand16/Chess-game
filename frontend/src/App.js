@@ -31,7 +31,7 @@ class App extends React.Component {
         ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
-        ["na", "na", "na", "na", "na", "pawn_dark", "na", "na"],
+        ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],        
         ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"],
       ],
@@ -65,12 +65,6 @@ class App extends React.Component {
     const { onGoingMoveOne, onGoingMoveTwo, playerSide, probableDestinations, chessGameData, clcikedPlayeri, clcikedPlayerj } = this.state;  
     if(!playerSide) { classArray = whiteClassArray; playerType="white" }
     clickedPlayer = chessGameData[i][j];
-    // console.log(onGoingMoveOne, onGoingMoveTwo)
-    // if(onGoingMoveOne && !onGoingMoveTwo){
-    //   // start the second step
-    // } else if(onGoingMoveOne && onGoingMoveTwo){
-    //   // complete the move
-    //   this.setState({ onGoingMoveOne: false, onGoingMoveTwo: false })
     let ifClickedOneOfDest = probableDestinations.filter(dest=>dest["x"] === i && dest["y"] === j)
     console.log(playerType, clickedPlayer, clickedPlayer.split("_")[1]) 
     if(ifClickedOneOfDest && ifClickedOneOfDest.length>0){
@@ -116,20 +110,22 @@ class App extends React.Component {
       break;
       case classArray[5]: // pawn
         if(playerSide){ // dark
+          // guarding 
+          // if(i+1<=7 && i+2<=7 && i-1>=0 && i-2>=0 && j-1>=0 && j+1<=7) return 
           // for highlighting non attacking destinations
-          if(chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+1, y:j, enemyCell: false })
+          if(i+1<=7 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+1, y:j, enemyCell: false })
           if(i===1 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+2, y:j, enemyCell: false });
           // for highlighting red for enemy at just diagonals
           console.log(chessGameData[i+1][j-1])
-          if(chessGameData[i+1][j-1]!=="na" && chessGameData[i+1][j-1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
-          if(chessGameData[i+1][j+1]!=="na" && chessGameData[i+1][j+1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
+          if(i+1<=7 && j-1>=0 && chessGameData[i+1][j-1]!=="na" && chessGameData[i+1][j-1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
+          if(i+1<=7 && j+1<=7 && chessGameData[i+1][j+1]!=="na" && chessGameData[i+1][j+1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
         } else { // white
           // for highlighting non attacking destinations
-          if(chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-1, y:j, enemyCell: false });
+          if(i-1>=0 && chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-1, y:j, enemyCell: false });
           if(i===6 && chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-2, y:j, enemyCell: false });
           // for highlighting red for enemy at just diagonals
-          if(chessGameData[i-1][j+1]!=="na" && chessGameData[i-1][j+1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
-          if(chessGameData[i-1][j-1]!=="na" && chessGameData[i-1][j-1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
+          if(i+1<=7 && i-1>=0 && j+1<=7 && j-1>=0 && chessGameData[i-1][j+1]!=="na" && chessGameData[i-1][j+1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
+          if(i+1<=7 && i-1>=0 && j+1<=7 && j-1>=0 && chessGameData[i-1][j-1]!=="na" && chessGameData[i-1][j-1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
         }
       break;
       default:
