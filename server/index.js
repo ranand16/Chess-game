@@ -30,7 +30,7 @@ socketserve.on('connection', (socket)=>{
             // add this user's details
             users.push(user);
             socket.join(room.id);
-            socketserve.sockets.in(room.id).emit('updateState', { room })
+            socket.broadcast.to(room.id).emit('updateState', { room })
             response["data"] = {room, user}
             callback(response)
         } catch(err) {
@@ -41,7 +41,6 @@ socketserve.on('connection', (socket)=>{
     });
     socket.on('participate', (userId, roomId, playerSide, callback)=>{
         let room; let user; let response = {status: true, data: {}}; let roomIndex; let userIndex; 
-        console.log(userId, roomId, playerSide, callback)
         try{ 
             if(!userId && !roomId) throw { status: false, data: "User id and Room id is mandatory." }
             room = rooms.find((currRoom, i) => {
@@ -52,15 +51,17 @@ socketserve.on('connection', (socket)=>{
                 userIndex = j;
                 return (user.id == userId);
             })
-            // room["spectators"].find()
+            console.log("roomIndex - ", roomIndex, "userIndex - ", userIndex)
             if(!room && !user) throw { status: false, data: "User and Room were not found in the database." }
             console.log(playerSide, room["players"], room["players"][0], room["players"][1])
             if(room["players"].length <= 2) { 
                 if(playerSide === "dark" && room["players"][0]==="") room["players"][0] = user;
                 else if(playerSide === "white" && room["players"][1]==="") room["players"][1] = user;
+                rooms[roomIndex] = room;
             }
-            console.log(room)
-            socketserve.sockets.in(room.id).emit('updateState', { room })
+            console.log("rooms print")
+            console.log(rooms)
+            socket.broadcast.to(room.id).emit('updateState', { room })
             response["data"] = { players: room["players"], room }
             callback(response)
         } catch(err) {
@@ -73,10 +74,11 @@ socketserve.on('connection', (socket)=>{
     socket.on('disconnect', (name, room)=>{
         console.log(`${name} wants to disconnect from the room name ${room}`);
     });
-    // socket.on('updateState', (roomId, callback)=>{
-    //     room = rooms.find(currRoom => currRoom.id == roomId)
-    //     callback(room)
-    // });
+    socket.on('updateFrontend', (roomId, callback)=>{
+        let room;
+        room = rooms.find(currRoom => currRoom.id == roomId)
+        callback(room)
+    })
 });
 server.listen(PORT, ()=>{
     console.log(`server running at ${PORT}`)

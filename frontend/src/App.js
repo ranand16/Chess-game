@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input } from 'reactstrap';
+import { Input, Button } from 'reactstrap';
 import io from 'socket.io-client'
 import { uuid } from "uuidv4"
 import './App.css'
@@ -12,19 +12,15 @@ class App extends React.Component {
     super(props);
     console.log(props);
     this.state = {
-      // joinScreen: "join", // can be false, "create" as well
-      joinScreen: false, // can be false, "create" as well
-      gameScreen: true,
+      joinScreen: "join", // can be false, "create" as well
+      gameScreen: false,
       userNameInput: "", // used in onchange handler and the final value
       roomNameInput: "", // used in onchange handler and the final value
-
       currentUserId: false, // room id for player after joining response
       currentRoomId: false, // user id for player after joining response
-
       onGoingMoveOne: false, // first click to select a cell for starting a move 
       onGoingMoveTwo: false, // second click to select a cell to end the move
-
-      playerSide: true, // true for black and false for white
+      playerSide: null, // true for dark and false for white
       chessGameData: [
         ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
         ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
@@ -37,12 +33,18 @@ class App extends React.Component {
       ],
       probableDestinations: [],
       clcikedPlayeri: null, // i value after selecting a player
-      clcikedPlayerj: null, // j value after selecting a player
+      clcikedPlayerj: null, // j value after selecting a player,
+      players: ["",""], // players playing 
+      spectators: ["",""] // people spectating 
     }
   }
 
   componentDidMount(){
-    // socket = io('localhost:5000')
+    socket = io('localhost:5000')
+    socket.on('updateState', (res)=>{
+      this.setState({ players: res["room"]["players"] })
+      console.log(res)
+    })
   }
 
   userNameChange = (e) => {
@@ -63,7 +65,7 @@ class App extends React.Component {
     let playerType = "dark";
     let clickedPlayer = null;
     const { onGoingMoveOne, onGoingMoveTwo, playerSide, probableDestinations, chessGameData, clcikedPlayeri, clcikedPlayerj } = this.state;  
-    if(!playerSide) { classArray = whiteClassArray; playerType="white" }
+    if(playerSide && playerSide !== "dark") { classArray = whiteClassArray; playerType="white" }
     clickedPlayer = chessGameData[i][j];
     let ifClickedOneOfDest = probableDestinations.filter(dest=>dest["x"] === i && dest["y"] === j)
     console.log(playerType, clickedPlayer, clickedPlayer.split("_")[1]) 
@@ -109,9 +111,7 @@ class App extends React.Component {
         console.log(clickedPlayer)
       break;
       case classArray[5]: // pawn
-        if(playerSide){ // dark
-          // guarding 
-          // if(i+1<=7 && i+2<=7 && i-1>=0 && i-2>=0 && j-1>=0 && j+1<=7) return 
+        if(playerSide && playerSide === "dark"){ // dark
           // for highlighting non attacking destinations
           if(i+1<=7 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+1, y:j, enemyCell: false })
           if(i===1 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+2, y:j, enemyCell: false });
@@ -143,11 +143,10 @@ class App extends React.Component {
         if(response.status){
           let respData = response["data"]
           if(type === "join" && respData["room"] && respData["user"] && respData["room"]["id"] && respData["user"]["id"]){
-            this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"] })
+            this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"], players: respData["room"]["players"], spectators: respData["room"]["spectators"]})
           } else if(type === "join" && !respData["room"]){
             // error - this room doesnot exist
           } else {
-            console.log("This was to create a room")
             this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"] })
           }
         } else {
@@ -160,17 +159,26 @@ class App extends React.Component {
     }
   }
 
-  participate = () => {
-    const { userNameInput, roomNameInput } = this.state;
-    socket.emit('participate',{ userName: userNameInput, roomName: roomNameInput }, (response)=>{
-      console.log(response);
-      this.setState({ gameScreen: true, joinScreen: false })
+  participate = async (playerSide) => {
+    const { currentRoomId, currentUserId } = this.state;
+    console.log(currentRoomId, currentUserId)
+    socket.emit('participate', currentUserId, currentRoomId, playerSide, (response)=>{
+      this.setState({ players: response['data']["players"] })
     })
   }
 
+  joinAsWhite = async () => {
+    this.setState({ playerSide: "white" })
+    await this.participate("white")
+  }
+
+  joinAsDark = async () => {
+    this.setState({ playerSide: "dark" })
+    await this.participate("dark")
+  }
+
   render (){
-    const { joinScreen, gameScreen, chessGameData, probableDestinations, currentRoomId, currentUserId } = this.state
-    // console.log(probableDestinations)
+    const { joinScreen, gameScreen, chessGameData, probableDestinations, playerSide, players, currentRoomId, currentUserId } = this.state
     return (
       <div className="App">
         {joinScreen && <div id="joinScreen">
@@ -186,7 +194,24 @@ class App extends React.Component {
           <button onClick={this.enterGame.bind(this, "join")}>Join</button>
         </div>}
         {gameScreen && <div id="gameScreen">
-          <div id="gameLeftPane">This is left pane</div>
+          <div id="gameLeftPane">
+            {playerSide === "white" &&
+              <p>
+                You 
+              </p>
+            }
+            { players[1] && players[1]!=="" && 
+              <div>
+                {players[1]["name"]}
+              </div>
+            }
+            { players[1]==="" &&
+              <div>
+                <span>Join as White</span>
+                <Button disabled={playerSide} onClick={this.joinAsWhite}>Join</Button>
+              </div>
+            }
+          </div>
           <div id="gamePane">
             {
               chessGameData.map((data, i)=>{
@@ -203,14 +228,31 @@ class App extends React.Component {
                         if(!isProbableDestination) isProbableDestination = probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j
                       }
                       let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":null} ${chessGameData[i][j]}`;
-                      return ( <div key={`${i}+${j}`} className={classNames} onClick={this.clickCell.bind(this,i,j)}></div>  )
+                      return ( <div key={`${i}+${j}`} className={classNames} onClick={playerSide?this.clickCell.bind(this,i,j):()=>{}}></div>  )
                     })}
                   </div>
                 )
               })
             }
           </div>
-          <div id="gameRightPane">This is right pane</div>
+          <div id="gameRightPane">
+            { playerSide === "dark" &&
+              <p>
+                You 
+              </p> 
+            }
+            { players[0] && players[0]!=="" && 
+              <div>
+                {players[0]["name"]}
+              </div>
+            }
+            { players[0]==="" &&
+              <div>
+                <span>Join as Dark</span>
+                <Button disabled={playerSide} onClick={this.joinAsDark}>Join</Button>
+              </div>
+            }
+          </div>
         </div>}
       </div>  
     );
