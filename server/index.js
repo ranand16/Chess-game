@@ -24,7 +24,16 @@ socketserve.on('connection', (socket)=>{
             if(room && type==="join" ) {// There is a room which is already created. So this is JOIN
                 room["spectators"].push(user)
             } else if(!room && type==="create") { // A new room is going to be created
-                room = { id: uuid(), name: roomName, spectators: [user], players: ["", ""] }
+                room = { id: uuid(), name: roomName, spectators: [user], players: ["",""], gameData:[
+                    ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
+                    ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
+                    ["na", "na", "na", "na", "na", "na", "na", "na"],
+                    ["na", "na", "na", "na", "na", "na", "na", "na"],
+                    ["na", "na", "na", "na", "na", "na", "na", "na"],
+                    ["na", "na", "na", "na", "na", "na", "na", "na"],
+                    ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],        
+                    ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"],
+                  ] }
                 rooms.push(room)
             }
             // add this user's details
@@ -74,10 +83,12 @@ socketserve.on('connection', (socket)=>{
     socket.on('disconnect', (name, room)=>{
         console.log(`${name} wants to disconnect from the room name ${room}`);
     });
-    socket.on('updateFrontend', (roomId, callback)=>{
+    socket.on('updateRoomData', (roomId, gameData)=>{
         let room;
-        room = rooms.find(currRoom => currRoom.id == roomId)
-        callback(room)
+        room = rooms.find(currRoom => currRoom.id == roomId);
+        room["gameData"] = gameData;
+        socket.broadcast.to(room.id).emit('updateFrontendRoomData', { room })
+
     })
 });
 server.listen(PORT, ()=>{

@@ -21,7 +21,7 @@ class App extends React.Component {
       onGoingMoveOne: false, // first click to select a cell for starting a move 
       onGoingMoveTwo: false, // second click to select a cell to end the move
       playerSide: null, // true for dark and false for white
-      chessGameData: [
+      gameData: [
         ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
         ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
@@ -41,9 +41,8 @@ class App extends React.Component {
 
   componentDidMount(){
     socket = io('localhost:5000')
-    socket.on('updateState', (res)=>{
-      this.setState({ players: res["room"]["players"] })
-      console.log(res)
+    socket.on('updateFrontendRoomData', (res)=>{
+      this.setState({ players: res["room"]["players"], gameData: res["room"]["gameData"] })
     })
   }
 
@@ -64,34 +63,35 @@ class App extends React.Component {
     let classArray = darkClassArray;
     let playerType = "dark";
     let clickedPlayer = null;
-    const { onGoingMoveOne, onGoingMoveTwo, playerSide, probableDestinations, chessGameData, clcikedPlayeri, clcikedPlayerj } = this.state;  
+    const { onGoingMoveOne, onGoingMoveTwo, playerSide, probableDestinations, gameData, clcikedPlayeri, clcikedPlayerj, currentRoomId } = this.state;  
     if(playerSide && playerSide !== "dark") { classArray = whiteClassArray; playerType="white" }
-    clickedPlayer = chessGameData[i][j];
+    clickedPlayer = gameData[i][j];
     let ifClickedOneOfDest = probableDestinations.filter(dest=>dest["x"] === i && dest["y"] === j)
     console.log(playerType, clickedPlayer, clickedPlayer.split("_")[1]) 
     if(ifClickedOneOfDest && ifClickedOneOfDest.length>0){
       // complete the move 
       if(clickedPlayer!=="na" && playerType !== clickedPlayer.split("_")[1]) {// there is enemy player at destination 
-        chessGameData[i][j] = chessGameData[clcikedPlayeri][clcikedPlayerj]
-        chessGameData[clcikedPlayeri][clcikedPlayerj] = "na";
-        this.setState({ chessGameData, probableDestinations: [] })
+        gameData[i][j] = gameData[clcikedPlayeri][clcikedPlayerj]
+        gameData[clcikedPlayeri][clcikedPlayerj] = "na";
+        this.setState({ gameData, probableDestinations: [] })
       } else if(clickedPlayer==="na"){ // no player at destination 
-        chessGameData[i][j] = chessGameData[clcikedPlayeri][clcikedPlayerj]
-        chessGameData[clcikedPlayeri][clcikedPlayerj] = "na";
-        this.setState({ chessGameData, probableDestinations: [] })
+        gameData[i][j] = gameData[clcikedPlayeri][clcikedPlayerj]
+        gameData[clcikedPlayeri][clcikedPlayerj] = "na";
+        this.setState({ gameData, probableDestinations: [] })
       }
+      socket.emit("updateRoomData", currentRoomId, gameData); // updating this info to all the users in this room
     } else {
       // check if the clicked cell is not empty
       if(clickedPlayer && clickedPlayer==="na") return // you have clicked an empty cell 
       // start the first step of move
       // check type of selected player & highlight the possible destinations
-      let probableDestinations = this.calculateDestinations(parseInt(i), parseInt(j), clickedPlayer, playerSide, classArray, chessGameData)
+      let probableDestinations = this.calculateDestinations(parseInt(i), parseInt(j), clickedPlayer, playerSide, classArray, gameData)
       // this.setState({ onGoingMoveOne: true, onGoingMoveTwo: false, probableDestinations })
       this.setState({ probableDestinations, clcikedPlayeri: i, clcikedPlayerj: j })
     }
   }
 
-  calculateDestinations = (i, j, clickedPlayer, playerSide, classArray, chessGameData) => {
+  calculateDestinations = (i, j, clickedPlayer, playerSide, classArray, gameData) => {
     console.log(i, j, clickedPlayer, classArray)
     let hightlightArray = [];
     switch(clickedPlayer){
@@ -113,19 +113,19 @@ class App extends React.Component {
       case classArray[5]: // pawn
         if(playerSide && playerSide === "dark"){ // dark
           // for highlighting non attacking destinations
-          if(i+1<=7 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+1, y:j, enemyCell: false })
-          if(i===1 && chessGameData[i+1][j]==="na") hightlightArray.push({ x:i+2, y:j, enemyCell: false });
+          if(i+1<=7 && gameData[i+1][j]==="na") hightlightArray.push({ x:i+1, y:j, enemyCell: false })
+          if(i===1 && gameData[i+1][j]==="na") hightlightArray.push({ x:i+2, y:j, enemyCell: false });
           // for highlighting red for enemy at just diagonals
-          console.log(chessGameData[i+1][j-1])
-          if(i+1<=7 && j-1>=0 && chessGameData[i+1][j-1]!=="na" && chessGameData[i+1][j-1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
-          if(i+1<=7 && j+1<=7 && chessGameData[i+1][j+1]!=="na" && chessGameData[i+1][j+1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
+          console.log(gameData[i+1][j-1])
+          if(i+1<=7 && j-1>=0 && gameData[i+1][j-1]!=="na" && gameData[i+1][j-1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
+          if(i+1<=7 && j+1<=7 && gameData[i+1][j+1]!=="na" && gameData[i+1][j+1].split("_")[1]!=="dark") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
         } else { // white
           // for highlighting non attacking destinations
-          if(i-1>=0 && chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-1, y:j, enemyCell: false });
-          if(i===6 && chessGameData[i-1][j]==="na") hightlightArray.push({ x:i-2, y:j, enemyCell: false });
+          if(i-1>=0 && gameData[i-1][j]==="na") hightlightArray.push({ x:i-1, y:j, enemyCell: false });
+          if(i===6 && gameData[i-1][j]==="na") hightlightArray.push({ x:i-2, y:j, enemyCell: false });
           // for highlighting red for enemy at just diagonals
-          if(i+1<=7 && i-1>=0 && j+1<=7 && j-1>=0 && chessGameData[i-1][j+1]!=="na" && chessGameData[i-1][j+1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
-          if(i+1<=7 && i-1>=0 && j+1<=7 && j-1>=0 && chessGameData[i-1][j-1]!=="na" && chessGameData[i-1][j-1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
+          if(i+1<=7 && i-1>=0 && j+1<=7 && j-1>=0 && gameData[i-1][j+1]!=="na" && gameData[i-1][j+1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j-1, enemyCell: true })
+          if(i+1<=7 && i-1>=0 && j+1<=7 && j-1>=0 && gameData[i-1][j-1]!=="na" && gameData[i-1][j-1].split("_")[1]!=="white") hightlightArray.push({ x:i+1, y:j+1, enemyCell: true })
         }
       break;
       default:
@@ -136,14 +136,14 @@ class App extends React.Component {
 
   enterGame = (type) => { // create or join
     console.log(type)
-    const { userNameInput, roomNameInput, chessGameData, probableDestinations } = this.state
+    const { userNameInput, roomNameInput, gameData, probableDestinations } = this.state
     if(userNameInput && roomNameInput){
       socket.emit("joinroom", { userName: userNameInput, roomName: roomNameInput }, type, (response)=>{
         console.log(response);
         if(response.status){
           let respData = response["data"]
           if(type === "join" && respData["room"] && respData["user"] && respData["room"]["id"] && respData["user"]["id"]){
-            this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"], players: respData["room"]["players"], spectators: respData["room"]["spectators"]})
+            this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"], players: respData["room"]["players"], spectators: respData["room"]["spectators"], gameData:  respData["room"]["gameData"]})
           } else if(type === "join" && !respData["room"]){
             // error - this room doesnot exist
           } else {
@@ -178,7 +178,7 @@ class App extends React.Component {
   }
 
   render (){
-    const { joinScreen, gameScreen, chessGameData, probableDestinations, playerSide, players, currentRoomId, currentUserId } = this.state
+    const { joinScreen, gameScreen, gameData, probableDestinations, playerSide, players, currentRoomId, currentUserId } = this.state
     return (
       <div className="App">
         {joinScreen && <div id="joinScreen">
@@ -214,7 +214,7 @@ class App extends React.Component {
           </div>
           <div id="gamePane">
             {
-              chessGameData.map((data, i)=>{
+              gameData.map((data, i)=>{
                 return (
                   <div key={`${i}`} className={"gamePaneRow"}>
                     {data.map((eachData, j)=>{
@@ -227,7 +227,7 @@ class App extends React.Component {
                         }
                         if(!isProbableDestination) isProbableDestination = probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j
                       }
-                      let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":null} ${chessGameData[i][j]}`;
+                      let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":null} ${gameData[i][j]}`;
                       return ( <div key={`${i}+${j}`} className={classNames} onClick={playerSide?this.clickCell.bind(this,i,j):()=>{}}></div>  )
                     })}
                   </div>
