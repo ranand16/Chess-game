@@ -24,7 +24,7 @@ socketserve.on('connection', (socket)=>{
             if(room && type==="join" ) {// There is a room which is already created. So this is JOIN
                 room["spectators"].push(user)
             } else if(!room && type==="create") { // A new room is going to be created
-                room = { id: uuid(), name: roomName, spectators: [user], players: ["",""], gameData:[
+                room = { id: uuid(), name: roomName, chance: null, spectators: [user], players: ["",""], gameData:[
                     ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
                     ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
                     ["na", "na", "na", "na", "na", "na", "na", "na"],
@@ -62,16 +62,12 @@ socketserve.on('connection', (socket)=>{
             })
             console.log("roomIndex - ", roomIndex, "userIndex - ", userIndex)
             if(!room && !user) throw { status: false, data: "User and Room were not found in the database." }
-            console.log(playerSide, room["players"], room["players"][0], room["players"][1])
-            if(room["players"].length <= 2) { 
-                if(playerSide === "dark" && room["players"][0]==="") room["players"][0] = user;
-                else if(playerSide === "white" && room["players"][1]==="") room["players"][1] = user;
-                rooms[roomIndex] = room;
-            }
-            console.log("rooms print")
-            console.log(rooms)
-            socket.broadcast.to(room.id).emit('updateState', { room })
-            response["data"] = { players: room["players"], room }
+            if(playerSide === "dark" && room["players"][0]==="") room["players"][0] = user;
+            else if(playerSide === "white" && room["players"][1]==="") room["players"][1] = user;
+            if(!room["chance"]) room["chance"] = "white"
+            rooms[roomIndex] = room;
+            socket.broadcast.to(room.id).emit('updateFrontendRoomData', { room })
+            response["data"] = { room }
             callback(response)
         } catch(err) {
             response["status"] = false
@@ -83,12 +79,18 @@ socketserve.on('connection', (socket)=>{
     socket.on('disconnect', (name, room)=>{
         console.log(`${name} wants to disconnect from the room name ${room}`);
     });
+    // This listener will be used to update room data 
     socket.on('updateRoomData', (roomId, gameData)=>{
-        let room;
-        room = rooms.find(currRoom => currRoom.id == roomId);
+        let room; let roomIndex;
+        room = rooms.find((currRoom, i) => {
+            roomIndex = i;
+            return (currRoom.id == roomId);
+        })
         room["gameData"] = gameData;
+        room["chance"] = room["chance"]==="dark"?"white":"dark";
+        rooms[roomIndex] = room;
+        console.log("Room ID : " + room.id , "chance : "+ room["chance"])
         socket.broadcast.to(room.id).emit('updateFrontendRoomData', { room })
-
     })
 });
 server.listen(PORT, ()=>{

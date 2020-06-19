@@ -18,8 +18,6 @@ class App extends React.Component {
       roomNameInput: "", // used in onchange handler and the final value
       currentUserId: false, // room id for player after joining response
       currentRoomId: false, // user id for player after joining response
-      onGoingMoveOne: false, // first click to select a cell for starting a move 
-      onGoingMoveTwo: false, // second click to select a cell to end the move
       playerSide: null, // true for dark and false for white
       gameData: [
         ["rook_dark", "knight_dark", "bishop_dark", "queen_dark", "king_dark", "bishop_dark", "knight_dark", "rook_dark"],
@@ -35,14 +33,16 @@ class App extends React.Component {
       clcikedPlayeri: null, // i value after selecting a player
       clcikedPlayerj: null, // j value after selecting a player,
       players: ["",""], // players playing 
-      spectators: ["",""] // people spectating 
+      spectators: ["",""], // people spectating 
+      currentChance: null
     }
   }
 
   componentDidMount(){
     socket = io('localhost:5000')
     socket.on('updateFrontendRoomData', (res)=>{
-      this.setState({ players: res["room"]["players"], gameData: res["room"]["gameData"] })
+      console.log("chance :" + res["room"]["chance"])
+      this.setState({ players: res["room"]["players"], gameData: res["room"]["gameData"], currentChance: res["room"]["chance"] })
     })
   }
 
@@ -63,7 +63,7 @@ class App extends React.Component {
     let classArray = darkClassArray;
     let playerType = "dark";
     let clickedPlayer = null;
-    const { onGoingMoveOne, onGoingMoveTwo, playerSide, probableDestinations, gameData, clcikedPlayeri, clcikedPlayerj, currentRoomId } = this.state;  
+    const { playerSide, probableDestinations, gameData, clcikedPlayeri, clcikedPlayerj, currentRoomId } = this.state;  
     if(playerSide && playerSide !== "dark") { classArray = whiteClassArray; playerType="white" }
     clickedPlayer = gameData[i][j];
     let ifClickedOneOfDest = probableDestinations.filter(dest=>dest["x"] === i && dest["y"] === j)
@@ -79,6 +79,7 @@ class App extends React.Component {
         gameData[clcikedPlayeri][clcikedPlayerj] = "na";
         this.setState({ gameData, probableDestinations: [] })
       }
+      console.log("calling updateRoomData")
       socket.emit("updateRoomData", currentRoomId, gameData); // updating this info to all the users in this room
     } else {
       // check if the clicked cell is not empty
@@ -136,14 +137,14 @@ class App extends React.Component {
 
   enterGame = (type) => { // create or join
     console.log(type)
-    const { userNameInput, roomNameInput, gameData, probableDestinations } = this.state
+    const { userNameInput, roomNameInput } = this.state
     if(userNameInput && roomNameInput){
       socket.emit("joinroom", { userName: userNameInput, roomName: roomNameInput }, type, (response)=>{
         console.log(response);
         if(response.status){
           let respData = response["data"]
           if(type === "join" && respData["room"] && respData["user"] && respData["room"]["id"] && respData["user"]["id"]){
-            this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"], players: respData["room"]["players"], spectators: respData["room"]["spectators"], gameData:  respData["room"]["gameData"]})
+            this.setState({ gameScreen: true, joinScreen: false, currentRoomId: respData["room"]["id"], currentUserId: respData["user"]["id"], players: respData["room"]["players"], spectators: respData["room"]["spectators"], gameData: respData["room"]["gameData"], currentChance: respData["room"]["chance"]})
           } else if(type === "join" && !respData["room"]){
             // error - this room doesnot exist
           } else {
@@ -163,7 +164,7 @@ class App extends React.Component {
     const { currentRoomId, currentUserId } = this.state;
     console.log(currentRoomId, currentUserId)
     socket.emit('participate', currentUserId, currentRoomId, playerSide, (response)=>{
-      this.setState({ players: response['data']["players"] })
+      this.setState({ players: response['data']["room"]["players"], spectators: response['data']["room"]["spectators"], gameData: response['data']["room"]["gameData"], currentChance: response['data']["room"]["chance"] })
     })
   }
 
@@ -178,7 +179,8 @@ class App extends React.Component {
   }
 
   render (){
-    const { joinScreen, gameScreen, gameData, probableDestinations, playerSide, players, currentRoomId, currentUserId } = this.state
+    const { joinScreen, gameScreen, gameData, probableDestinations, playerSide, players, currentChance, currentRoomId, currentUserId } = this.state
+    console.log("playerSide : " + playerSide, "currentChance : " + currentChance);
     return (
       <div className="App">
         {joinScreen && <div id="joinScreen">
@@ -228,7 +230,7 @@ class App extends React.Component {
                         if(!isProbableDestination) isProbableDestination = probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j
                       }
                       let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":null} ${gameData[i][j]}`;
-                      return ( <div key={`${i}+${j}`} className={classNames} onClick={playerSide?this.clickCell.bind(this,i,j):()=>{}}></div>  )
+                      return ( <div key={`${i}+${j}`} className={classNames} onClick={(playerSide && playerSide===currentChance)?this.clickCell.bind(this,i,j):()=>{}}></div>  )
                     })}
                   </div>
                 )
