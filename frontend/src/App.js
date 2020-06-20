@@ -41,7 +41,7 @@ class App extends React.Component {
   componentDidMount(){
     socket = io('localhost:5000')
     socket.on('updateFrontendRoomData', (res)=>{
-      console.log("chance :" + res["room"]["chance"])
+      console.log("Room ID : " + res["room"]["id"] , "chance :" + res["room"]["chance"])
       this.setState({ players: res["room"]["players"], gameData: res["room"]["gameData"], currentChance: res["room"]["chance"] })
     })
   }
@@ -80,7 +80,10 @@ class App extends React.Component {
         this.setState({ gameData, probableDestinations: [] })
       }
       console.log("calling updateRoomData")
-      socket.emit("updateRoomData", currentRoomId, gameData); // updating this info to all the users in this room
+      socket.emit("updateRoomData", currentRoomId, gameData, (room)=>{
+        console.log(room)
+        this.setState({ players: room["players"], spectators: room["spectators"], gameData: room["gameData"], currentChance: room["chance"]})
+      }); // updating this info to all the users in this room
     } else {
       // check if the clicked cell is not empty
       if(clickedPlayer && clickedPlayer==="na") return // you have clicked an empty cell 
@@ -162,7 +165,7 @@ class App extends React.Component {
 
   participate = async (playerSide) => {
     const { currentRoomId, currentUserId } = this.state;
-    console.log(currentRoomId, currentUserId)
+    // console.log(currentRoomId, currentUserId)
     socket.emit('participate', currentUserId, currentRoomId, playerSide, (response)=>{
       this.setState({ players: response['data']["room"]["players"], spectators: response['data']["room"]["spectators"], gameData: response['data']["room"]["gameData"], currentChance: response['data']["room"]["chance"] })
     })

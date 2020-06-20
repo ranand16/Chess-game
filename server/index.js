@@ -80,17 +80,18 @@ socketserve.on('connection', (socket)=>{
         console.log(`${name} wants to disconnect from the room name ${room}`);
     });
     // This listener will be used to update room data 
-    socket.on('updateRoomData', (roomId, gameData)=>{
+    socket.on('updateRoomData', (roomId, gameData, callback)=>{
         let room; let roomIndex;
         room = rooms.find((currRoom, i) => {
             roomIndex = i;
             return (currRoom.id == roomId);
-        })
+        });
         room["gameData"] = gameData;
         room["chance"] = room["chance"]==="dark"?"white":"dark";
         rooms[roomIndex] = room;
         console.log("Room ID : " + room.id , "chance : "+ room["chance"])
         socket.broadcast.to(room.id).emit('updateFrontendRoomData', { room })
+        callback(room)
     })
 });
 server.listen(PORT, ()=>{
