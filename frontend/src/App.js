@@ -34,7 +34,7 @@ class App extends React.Component {
       clcikedPlayerj: null, // j value after selecting a player,
       players: ["",""], // players playing 
       spectators: ["",""], // people spectating 
-      currentChance: null
+      currentChance: null,
     }
   }
 
@@ -113,7 +113,7 @@ class App extends React.Component {
         while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
           if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]==="na"){
             hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: false });
-          } else if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]!=="na" && playerSide!==clickedPlayerType){
+          } else if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]!=="na" && playerSide!==gameData[index-1][jindex-1].split("_")[1]){
             hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: true });
             break;
           } else break;
@@ -123,7 +123,7 @@ class App extends React.Component {
         while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
           if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]==="na"){
             hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: false });          
-          } else if(index+1<=7 && jindex-1>=0 && gameData[index-1][jindex-1]!=="na" && playerSide!==clickedPlayerType){
+          } else if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]!=="na" && playerSide!==gameData[index+1][jindex-1].split("_")[1]){
             hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: true });
             break;
           } else break;
@@ -133,7 +133,7 @@ class App extends React.Component {
         while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
           if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]==="na"){
             hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: false });          
-          } else if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex-1]!=="na" && playerSide!==clickedPlayerType){
+          } else if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]!=="na" && playerSide!==gameData[index-1][jindex+1].split("_")[1]){
             hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: true });
             break;
           } else break;
@@ -143,7 +143,7 @@ class App extends React.Component {
         while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
           if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]==="na"){
             hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: false });          
-          } else if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]!=="na" && playerSide!==clickedPlayerType){
+          } else if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]!=="na" && playerSide!==gameData[index+1][jindex+1].split("_")[1]){
             hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: true });
             break;
           } else break;
@@ -280,8 +280,7 @@ class App extends React.Component {
                         if(!isProbableDestination) isProbableDestination = probableDestinations[d]["x"] === i && probableDestinations[d]["y"] === j
                       }
                       let classNames = `gamePaneCell ${((i%2===0 && j%2===0) || (i%2!==0 && j%2!==0))?("whiteBackground"):("blackBackground")} ${isProbableDestination?"highlight":null} ${isDanger?"highlight_danger":null} ${gameData[i][j]}`;
-                      // return ( <div key={`${i}+${j}`} className={classNames} onClick={(playerSide && playerSide===currentChance)?this.clickCell.bind(this,i,j):()=>{}}></div>  )
-                      return ( <div key={`${i}+${j}`} className={classNames} onClick={this.clickCell.bind(this,i,j)}></div>  )
+                      return ( <div key={`${i}+${j}`} className={classNames} onClick={(playerSide && playerSide===currentChance)?this.clickCell.bind(this,i,j):()=>{}}></div>  )
                     })}
                   </div>
                 )
