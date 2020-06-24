@@ -24,7 +24,7 @@ class App extends React.Component {
         ["pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark", "pawn_dark"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
-        ["na", "na", "na", "na", "bishop_dark", "na", "na", "na"],
+        ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["na", "na", "na", "na", "na", "na", "na", "na"],
         ["pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white", "pawn_white"],        
         ["rook_white", "knight_white", "bishop_white", "queen_white", "king_white", "bishop_white", "knight_white", "rook_white"],
@@ -97,70 +97,125 @@ class App extends React.Component {
 
   calculateDestinations = (i, j, clickedPlayer, playerSide, classArray, gameData, clickedPlayerType) => {
     // console.log(i, j, clickedPlayer, classArray, clickedPlayerType)
-    console.log(playerSide, clickedPlayerType)
+    console.log(classArray[0], classArray[2], classArray[3], clickedPlayer)
     let hightlightArray = [];
+    let index = i; let jindex = j;
     switch(clickedPlayer){
       case classArray[0]: // rook // horizontally/vetically 
+      case classArray[2]: // bishop // diagonally
+      case classArray[3]: // queen // horizontally/vetically and diagonally
+        if(clickedPlayer===classArray[0] || clickedPlayer===classArray[3]){
+          console.log("106")
+          index = i; jindex = j;
+          while(index>=0 && index<=7){
+            if(index-1>=0 && gameData[index-1][jindex]==="na"){
+              hightlightArray.push({ x:index-1, y:jindex, enemyCell: false });
+            } else if(index-1>=0 && gameData[index-1][jindex]!=="na" && playerSide!==gameData[index-1][jindex].split("_")[1]){
+              hightlightArray.push({ x:index-1, y:jindex, enemyCell: true });
+              break;
+            } else break;
+            --index;
+          }
+          index = i; jindex = j;
+          while(index>=0 && index<=7){
+            if(index+1<=7 && gameData[index+1][jindex]==="na"){
+              hightlightArray.push({ x:index+1, y:jindex, enemyCell: false });          
+            } else if(index+1<=7 && gameData[index+1][jindex]!=="na" && playerSide!==gameData[index+1][jindex].split("_")[1]){
+              hightlightArray.push({ x:index+1, y:jindex, enemyCell: true });
+              break;
+            } else break;
+            ++index;
+          }
+          index = i; jindex = j;
+          while(jindex>=0 && jindex<=7){
+            if(jindex-1>=0 && gameData[index][jindex-1]==="na"){
+              hightlightArray.push({ x:index, y:jindex-1, enemyCell: false });
+            } else if(jindex-1>=0 && gameData[index][jindex-1]!=="na" && playerSide!==gameData[index][jindex-1].split("_")[1]){
+              hightlightArray.push({ x:index, y:jindex-1, enemyCell: true });
+              break;
+            } else break;
+            --jindex;
+          }
+          index = i; jindex = j;
+          while(jindex>=0 && jindex<=7){
+            if(jindex+1<=7 && gameData[index][jindex+1]==="na"){
+              hightlightArray.push({ x:index, y:jindex+1, enemyCell: false });          
+            } else if(jindex+1<=7 && gameData[index][jindex+1]!=="na" && playerSide!==gameData[index][jindex+1].split("_")[1]){
+              hightlightArray.push({ x:index, y:jindex+1, enemyCell: true });
+              break;
+            } else break;
+            ++jindex;
+          }
+        }
+        if(clickedPlayer===classArray[2] || clickedPlayer===classArray[3]){
+          console.log("149")
+          index = i; jindex = j;
+          while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
+            if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]==="na"){
+              hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: false });
+            } else if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]!=="na" && playerSide!==gameData[index-1][jindex-1].split("_")[1]){
+              hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: true });
+              break;
+            } else break;
+            --index; --jindex;
+          }
+          index = i; jindex = j;
+          while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
+            if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]==="na"){
+              hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: false });          
+            } else if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]!=="na" && playerSide!==gameData[index+1][jindex-1].split("_")[1]){
+              hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: true });
+              break;
+            } else break;
+            ++index; --jindex;
+          }
+          index = i; jindex = j;
+          while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
+            if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]==="na"){
+              hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: false });          
+            } else if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]!=="na" && playerSide!==gameData[index-1][jindex+1].split("_")[1]){
+              hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: true });
+              break;
+            } else break;
+            --index; ++jindex;
+          }
+          index = i; jindex = j;
+          while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
+            if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]==="na"){
+              hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: false });          
+            } else if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]!=="na" && playerSide!==gameData[index+1][jindex+1].split("_")[1]){
+              hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: true });
+              break;
+            } else break;
+            ++index; ++jindex;
+          }
+        }
+        break; 
+      case classArray[4]: // king 
         console.log(clickedPlayer)
-      break;
+        if(index+1<=7 && gameData[index+1][jindex]==="na") { hightlightArray.push({ x:index+1, y:jindex, enemyCell: false }) } else if(index+1<=7 && gameData[index+1][jindex]!=="na" && playerSide!==gameData[index+1][jindex].split("_")[1]) { hightlightArray.push({ x:index+1, y:jindex, enemyCell: true }) }
+        if(index-1>=0 && gameData[index-1][jindex]==="na") { hightlightArray.push({ x:index-1, y:jindex, enemyCell: false }) } else if(index-1>=0 && gameData[index-1][jindex]!=="na" && playerSide!==gameData[index-1][jindex].split("_")[1]) { hightlightArray.push({ x:index-1, y:jindex, enemyCell: true }) }
+        if(jindex+1<=7 && gameData[index][jindex+1]==="na") { hightlightArray.push({ x:index, y:jindex+1, enemyCell: false }) } else if(jindex+1<=7 && gameData[index][jindex+1]!=="na" && playerSide!==gameData[index][jindex+1].split("_")[1]) { hightlightArray.push({ x:index, y:jindex+1, enemyCell: true }) }
+        if(jindex-1>=0 && gameData[index][jindex-1]==="na") { hightlightArray.push({ x:index, y:jindex-1, enemyCell: false }) } else if(jindex-1>=0 && gameData[index][jindex-1]!=="na" && playerSide!==gameData[index][jindex-1].split("_")[1]) { hightlightArray.push({ x:index, y:jindex-1, enemyCell: true }) }
+        
+        if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]==="na") { hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: false }) } else if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]!=="na" && playerSide!==gameData[index+1][jindex+1].split("_")[1]) { hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: true }) }
+        if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]==="na") { hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: false }) } else if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]!=="na" && playerSide!==gameData[index+1][jindex-1].split("_")[1]) { hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: true }) }
+        if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]==="na") { hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: false }) } else if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]!=="na" && playerSide!==gameData[index-1][jindex+1].split("_")[1]) { hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: true }) }
+        if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]==="na") { hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: false }) } else if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]!=="na" && playerSide!==gameData[index-1][jindex-1].split("_")[1]) { hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: true }) }
+        break;
       case classArray[1]: // knight 
         console.log(clickedPlayer)
-      break;
-      case classArray[2]: // bishop // diagonal movement
-        let index = i; let jindex = j;
-        console.log(clickedPlayer)
-        // var diagonals = gameData.Where((n, index) => gameData[i] - n[index] === gameData[i] - n[index]);
-        while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
-          if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]==="na"){
-            hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: false });
-          } else if(index-1>=0 && jindex-1>=0 && gameData[index-1][jindex-1]!=="na" && playerSide!==gameData[index-1][jindex-1].split("_")[1]){
-            hightlightArray.push({ x:index-1, y:jindex-1, enemyCell: true });
-            break;
-          } else break;
-          --index; --jindex;
-        }
         index = i; jindex = j;
-        while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
-          if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]==="na"){
-            hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: false });          
-          } else if(index+1<=7 && jindex-1>=0 && gameData[index+1][jindex-1]!=="na" && playerSide!==gameData[index+1][jindex-1].split("_")[1]){
-            hightlightArray.push({ x:index+1, y:jindex-1, enemyCell: true });
-            break;
-          } else break;
-          ++index; --jindex;
-        }
-        index = i; jindex = j;
-        while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
-          if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]==="na"){
-            hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: false });          
-          } else if(index-1>=0 && jindex+1<=7 && gameData[index-1][jindex+1]!=="na" && playerSide!==gameData[index-1][jindex+1].split("_")[1]){
-            hightlightArray.push({ x:index-1, y:jindex+1, enemyCell: true });
-            break;
-          } else break;
-          --index; ++jindex;
-        }
-        index = i; jindex = j;
-        while(index>=0 && index<=7 && jindex>=0 && jindex<=7){
-          if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]==="na"){
-            hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: false });          
-          } else if(index+1<=7 && jindex+1<=7 && gameData[index+1][jindex+1]!=="na" && playerSide!==gameData[index+1][jindex+1].split("_")[1]){
-            hightlightArray.push({ x:index+1, y:jindex+1, enemyCell: true });
-            break;
-          } else break;
-          ++index; ++jindex;
-        }
-        // if(playerSide && playerSide === "dark"){ // dark
+        if(index+1<=7 && jindex+2<=7 && gameData[index+1][jindex+2]==="na") { hightlightArray.push({ x:index+1, y:jindex+2, enemyCell: false }) } else if(index+1<=7 && jindex+2<=7 && gameData[index+1][jindex+2]!=="na" && playerSide!==gameData[index+1][jindex+2].split("_")[1]) { hightlightArray.push({ x:index+1, y:jindex+2, enemyCell: true }) }
+        if(index+1<=7 && jindex-2>=0 && gameData[index+1][jindex-2]==="na") { hightlightArray.push({ x:index+1, y:jindex-2, enemyCell: false }) } else if(index+1<=7 && jindex-2>=0 && gameData[index+1][jindex-2]!=="na" && playerSide!==gameData[index+1][jindex-2].split("_")[1]) { hightlightArray.push({ x:index+1, y:jindex-2, enemyCell: true }) }
+        if(index-1>=0 && jindex+2<=7 && gameData[index-1][jindex+2]==="na") { hightlightArray.push({ x:index-1, y:jindex+2, enemyCell: false }) } else if(index-1>=0 && jindex+2<=7 && gameData[index-1][jindex+2]!=="na" && playerSide!==gameData[index-1][jindex+2].split("_")[1]) { hightlightArray.push({ x:index-1, y:jindex+2, enemyCell: true }) }
+        if(index-1>=0 && jindex-2>=0 && gameData[index-1][jindex-2]==="na") { hightlightArray.push({ x:index-1, y:jindex-2, enemyCell: false }) } else if(index-1>=0 && jindex-2>=0 && gameData[index-1][jindex-2]!=="na" && playerSide!==gameData[index-1][jindex-2].split("_")[1]) { hightlightArray.push({ x:index-1, y:jindex-2, enemyCell: true }) }
 
-        // } else if(playerSide && playerSide === "white") { //white
-
-        // }
-      break;
-      case classArray[3]: // queen // horizontally/vetically/diagonal movement
-        console.log(clickedPlayer)
-      break;
-      case classArray[4]: // king // 
-        console.log(clickedPlayer)
-      break;
+        if(jindex+1<=7 && index+2<=7 && gameData[index+2][jindex+1]==="na") { hightlightArray.push({ x:index+2, y:jindex+1, enemyCell: false }) } else if(jindex+1<=7 && index+2<=7 && gameData[index+2][jindex+1]!=="na" && playerSide!==gameData[index+2][jindex+1].split("_")[1]) { hightlightArray.push({ x:index+2, y:jindex+1, enemyCell: true }) }
+        if(jindex-1>=0 && index+2<=7 && gameData[index+2][jindex-1]==="na") { hightlightArray.push({ x:index+2, y:jindex-1, enemyCell: false }) } else if(jindex-1>=0 && index+2<=7 && gameData[index+2][jindex-1]!=="na" && playerSide!==gameData[index+2][jindex-1].split("_")[1]) { hightlightArray.push({ x:index+2, y:jindex-1, enemyCell: true }) }
+        if(jindex+1<=7 && index-2>=0 && gameData[index-2][jindex+1]==="na") { hightlightArray.push({ x:index-2, y:jindex+1, enemyCell: false }) } else if(jindex+1<=7 && index-2>=0 && gameData[index-2][jindex+1]!=="na" && playerSide!==gameData[index-2][jindex+1].split("_")[1]) { hightlightArray.push({ x:index-2, y:jindex+1, enemyCell: true }) }
+        if(jindex-1>=0 && index-2>=0 && gameData[index-2][jindex-1]==="na") { hightlightArray.push({ x:index-2, y:jindex-1, enemyCell: false }) } else if(jindex-1>=0 && index-2>=0 && gameData[index-2][jindex-1]!=="na" && playerSide!==gameData[index-2][jindex-1].split("_")[1]) { hightlightArray.push({ x:index-2, y:jindex-1, enemyCell: true }) }
+        break;
       case classArray[5]: // pawn
         if(playerSide && playerSide === "dark"){ // dark
           // for highlighting non attacking destinations
@@ -180,7 +235,7 @@ class App extends React.Component {
         }
       break;
       default:
-      break;
+        break;
     }
     return hightlightArray
   }
