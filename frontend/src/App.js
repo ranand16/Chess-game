@@ -63,22 +63,24 @@ class App extends React.Component {
     let classArray = darkClassArray;
     let playerType = "dark";
     let clickedPlayer = null;
-    const { playerSide, probableDestinations, gameData, clcikedPlayeri, clcikedPlayerj, currentRoomId } = this.state;  
+    const { playerSide, probableDestinations, gameData, clcikedPlayeri, clcikedPlayerj, currentRoomId } = this.state; 
+    console.log(clcikedPlayeri, clcikedPlayerj) 
     if(playerSide && playerSide !== "dark") { classArray = whiteClassArray; playerType="white" }
     clickedPlayer = gameData[i][j];
     let ifClickedOneOfDest = probableDestinations.filter(dest=>dest["x"] === i && dest["y"] === j)
     console.log(playerType, clickedPlayer, clickedPlayer.split("_")[1]) 
     if(ifClickedOneOfDest && ifClickedOneOfDest.length>0){
+      console.log(clickedPlayer.split("_")[0], i, j)
       // complete the move 
-      if(clickedPlayer!=="na" && playerType !== clickedPlayer.split("_")[1]) {// there is enemy player at destination 
-        gameData[i][j] = gameData[clcikedPlayeri][clcikedPlayerj]
+      if(clickedPlayer!=="na" && playerType !== clickedPlayer.split("_")[1]) {// there is enemy player at destination and checking if pawn reaches the other side's border(upgrade to queen)
+        gameData[i][j] = (gameData[clcikedPlayeri][clcikedPlayerj].split("_")[0]==="pawn" && (i===0 || i===7))?(playerSide==="white"?"queen_white":"queen_dark"):gameData[clcikedPlayeri][clcikedPlayerj]
         gameData[clcikedPlayeri][clcikedPlayerj] = "na";
-        this.setState({ gameData, probableDestinations: [] })
       } else if(clickedPlayer==="na"){ // no player at destination 
-        gameData[i][j] = gameData[clcikedPlayeri][clcikedPlayerj]
+        gameData[i][j] = (gameData[clcikedPlayeri][clcikedPlayerj].split("_")[0]==="pawn" && (i===0 || i===7))?(playerSide==="white"?"queen_white":"queen_dark"):gameData[clcikedPlayeri][clcikedPlayerj]
         gameData[clcikedPlayeri][clcikedPlayerj] = "na";
-        this.setState({ gameData, probableDestinations: [] })
       }
+      console.log(gameData[i][j]);
+      this.setState({ gameData, probableDestinations: [] })      
       // check for check mate for opponent player
 
       console.log("calling updateRoomData")
